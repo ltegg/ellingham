@@ -1,17 +1,21 @@
+# %% Compatability for Python 2.7.
+from __future__ import division
+from __future__ import unicode_literals
+# %%
 # ################
 # ellingham.py
 # ################
 #
-# by ltegg@live.com 
+# by l t e g g @ l i v e . c o m  
 # 2017-12-01
 # Version 0.1
 #
-# A Python 3.5 script which generates Ellingham diagrams for some oxides,
+# A Python 3.7.0 script which generates Ellingham diagrams for some oxides,
 # carbides, nitrides and fluorides, chlorides. Produces a .pdf which can be
 # printed, and which can also be found in the github repository
 # (https://github.com/ltegg/ellingham).
 #
-# As the change  in Gibbs free energy is approximately linear with temperature,
+# As the change in Gibbs free energy is approximately linear with temperature,
 # data is stored as a set of line segments, coded as pairs of co-ordinates.
 # Line segments are stored separately for when the metal or the compound are in
 # different phases.
@@ -38,64 +42,87 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as pl
 # Use Arial as the font, and use regular text instead of math text for equations.
 pl.rcParams.update({'mathtext.default': 'regular',
+                    'mathtext.fontset':'custom',
+                    'mathtext.it':'Arial:italic',
+                    'mathtext.rm':'Arial',                 
                     'font.family':'Arial',})
+
+
 
     
 # %% Metal Oxides
 
 # Temperature values are in Kelvin
 # DeltaG values is in kcal/moleO2
-# Both are converted later in the script.
+# Both are converted to other units later in the script.
 
 # Metal: solid, oxide: solid
 oxss = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset in vertical direction
-                    [   0, 932, -266.6, -220.0, r'$\frac{4}{3} Al + O_2 = \frac{2}{3} Al_2O_3$', -11],  
-                    [   0, 983, -265.0, -222.0, '$2Ba + O_2 = 2BaO $', 2],
+                    [   0, 932, -266.6, -220.0, r'$\frac{4}{3} Al + O_2 = \frac{2}{3} Al_2O_3$', -13],
+                    [   0, 904, -111.0,  -74.0, r'$\frac{4}{3} Sb + O_2 = \frac{2}{3} Sb_2O_3$', 3],
+                    [   0, 983, -265.0, -222.0, '$2Ba + O_2 = 2BaO $', 0],
+                    [   0, 544,  -92.0,  -69.0, r'$\frac{4}{3} Bi + O_2 = \frac{2}{3} Bi_2O_3$', 6],
                     [   0, 723, -200.5, -171.5, r'$\frac{4}{3} B + O_2 = \frac{2}{3} B_2O_3$', -3],
                     [   0,1123, -303.0, -249.0, '$2Ca + O_2 = 2CaO $', 0],
                     [   0,   0,  -55.6,  -55.6, '$2C + O_2 = 2CO $', 0],
-                    [   0,   0,  -94.5,  -94.5, '$C + O_2 = CO_2 $', 0], 
+                    [   0,   0,  -94.5,  -94.5, '$C + O_2 = CO_2 $', -8], 
+                    [   0, 302, -151.8, -125.0, '$4Cs + O_2 = 2Cs_2O$', -14],
                     [   0,1357,  -80.0,  -33.0, '$4Cu + O_2 = 2Cu_2O $', 0],
                     [   0,1357,  -74.5,  -16.0, '$2Cu + O_2 = 2CuO $', 0],                   
                     [   0,   0, -119.3, -119.3, '$4H + O_2 = 2H_2O$', 12],
-                    [   0,1642, -124.1,  -75.0, '$2Fe + O_2 = 2FeO$', -7],
+                    [   0,1642, -124.1,  -75.0, '$2Fe + O_2 = 2FeO$', -9],
                     [   0,1809, -129.2,  -55.5, r'$\frac{4}{3} Fe + O_2 = \frac{2}{3} Fe_2O_3$', -5],
-                    [   0, 453, -286.0, -258.0, '$4Li + O_2 = 2Li_2O $', -10],
+                    [   0, 453, -286.0, -258.0, '$4Li + O_2 = 2Li_2O $', -12],
                     [   0,1068, -120.0,  -77.0, r'$ \frac{2}{3}Mo + O_2 = \frac{2}{3}MoO_3 $', -3],
-                    [   0, 923, -286.0, -240.0, '$2Mg + O_2 = 2MgO $', 10],
+                    [   0, 923, -286.0, -240.0, '$2Mg + O_2 = 2MgO $', 8],
+                    [   0,   0,  -44.0,  -44.0, '$2Hg + O_2 = 2HgO$', 0],
+                    [   0,1764, -181.0, -112.0, r'$\frac{4}{5}Nb + O_2 = \frac{2}{5}Nb_2O_5$', 0],
                     [   0, 734,  -32.0,    0.0, r'$\frac{3}{2} Pt + O_2 = \frac{1}{2}Pt_3O_4 $', 0],
-                    [   0, 336, -172.0, -151.0, '$4K + O_2 = 2K_2O $', 0],
+                    [   0, 336, -172.0, -151.0, '$4K + O_2 = 2K_2O $', -14],
+                    [   0, 312, -157.8, -138.0, '$4Rb + O_2 = 2Rb_2O$', -8],
                     [   0,1685, -216.5, -145.8, '$Si + O_2 = SiO_2 $', 0],
                     [   0, 480,  -14.0,    0.0, '$4Ag + O_2 = 2Ag_2O $', 0],
                     [   0, 371, -197.0, -176.0, '$4Na + O_2 = 2Na_2O $', 3],
+                    [   0,1043, -281.0, -233.0, '$2Sr + O_2 = 2SrO$', 5],
+                    [   0, 505, -138.8, -114.0, '$Sn + O_2 = SnO_2 $', -11],
                     [   0,1940, -225.5, -142.5, '$Ti + O_2 = TiO_2 $', 0],
+                    [   0,1940, -247.5, -161.0, '$2Ti + O_2 = 2TiO$', 0],
+                    [   0,1818, -168.0, -100.0, '$V + O_2 = VO_2$', -9],
+                    [   0, 943, -149.5, -110.0, r'$\frac{4}{5}V + O_2 = \frac{2}{5}V_2O_5$', 2],                   
                     [   0,1743, -133.0,  -67.0, r'$ \frac{2}{3}W + O_2 = \frac{2}{3}WO_3 $', -10],
-                    [   0, 693, -166.0, -134.0, '$2Zn + O_2 = 2ZnO $', 0],
-                    [   0,2125, -262.0, -166.0, '$Zr + O_2 = ZrO_2 $', 8],
+                    [   0, 693, -166.0, -134.0, '$2Zn + O_2 = 2ZnO $', 4],
+                    [   0,2125, -262.0, -166.0, '$Zr + O_2 = ZrO_2 $', 9],
                 ])
 
 # Metal: liquid, oxide: solid
 oxls = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset in vertical direction
-                    [ 932,2345, -220.0, -147.6, r'$\frac{4}{3} Al + O = \frac{2}{3} Al_2O_3$', 0],  
+                    [ 932,2345, -220.0, -147.6, r'$\frac{4}{3} Al + O = \frac{2}{3} Al_2O_3$', 0],
+                    [ 904, 928,  -74.0,  -73.0, r'$\frac{4}{3} Sb + O_2 = \frac{2}{3} Sb_2O_3$', 0],                    
                     [ 983,1895, -222.0, -183.0, '$2Ba + O_2 = 2BaO $', 0],
+                    [ 544,1098,  -69.0,  -44.0, r'$\frac{4}{3} Bi + O_2 = \frac{2}{3} Bi_2O_3$', 0],
                     [1123,1756, -249.0, -217.0, '$2Ca + O_2 = 2CaO $', 0],
+                    [ 302, 763, -125.0,  -84.0, '$4Cs + O_2 = 2Cs_2O$', -16],                   
                     [1357,1509,  -33.0,  -28.0, '$4Cu + O_2 = 2Cu_2O $', 0],
                     [1357,1609,  -16.0,   -9.5, '$2Cu + O_2 = 2CuO $', 0], 
                     [ 453,1597, -258.0, -173.0, '$4Li + O_2 = 2Li_2O $', 0],
                     [ 336, 980, -151.0, -107.0, '$4K + O_2 = 2K_2O $', 0],
+                    [   0, 630,  -44.0,  -10.0, '$2Hg + O_2 = 2HgO$', 0],
+                    [ 312, 910, -138.0,  -96.0, '$4Rb + O_2 = 2Rb_2O$', -8],                   
                     [1685,1696, -145.8, -145.4, '$Si + O_2 = SiO_2 $', 0],
                     [ 371,1156, -176.0, -122.0, '$4Na + O_2 = 2Na_2O $', 0],
                     [1940,2128, -142.5, -134.5, '$Ti + O_2 = TiO_2 $', 0],  
+                    [1940,2033, -161.0, -159.0, '$2Ti + O_2 = 2TiO$', 0],
                     [ 693,1180, -134.0, -109.0, '$2Zn + O_2 = 2ZnO $', 0],                   
                     [2125,2980, -166.0, -130.0, '$Zr + O_2 = ZrO_2 $', 0],                   
                 ])
 
-# Meta:l gas, oxide: solid
+# Metal: gas, oxide: solid
 oxgs = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset in vertical direction
                     [1895,2191, -183.0, -159.0, '$2Ba + O_2 = 2BaO $', 0],
                     [1756,2887, -217.0, -117.0, '$2Ca + O_2 = 2CaO $', 0],
                     [1597,2000, -173.0, -128.0, '$4Li + O_2 = 2Li_2O $', 0],
                     [ 923,1376, -240.0, -214.0, '$2Mg + O_2 = 2MgO $', 0],
+                    [ 630, 740,  -10.0,    0.0, '$2Hg + O_2 = 2HgO$', 0],                    
                     [1156,1193, -122.0, -119.0, '$4Na + O_2 = 2Na_2O $', 0],
                     [1180,2240, -109.0,   -9.0, '$2Zn + O_2 = 2ZnO $', 0],                   
                     
@@ -106,19 +133,27 @@ oxsl = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset
                     [ 723,2313, -171.5, -112.0, r'$\frac{4}{3} B + O = \frac{2}{3} B_2O_3$', 0],
                     [1642,1809,  -75.0,  -71.9, '$2Fe + O_2 = 2FeO$', 0],
                     [1068,1530,  -77.0,  -64.0, '$ something Mo $', 0],
+                    [1818,2190, -100.0,  -96.0, '$V + O_2 = VO_2$', 0],                    
                     [1743,2100,  -67.0,  -57.0, r'$ \frac{2}{3}W + O_2 = \frac{2}{3}WO_3 $', 0],                   
                 ])              
 
 # Metal: liquid, oxide: liquid
 oxll = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset in vertical direction
-                    [2345,2736, -147.6, -128.5, r'$\frac{4}{3} Al + O = \frac{2}{3} Al_2O_3$', 0],  
+                    [2345,2736, -147.6, -128.5, r'$\frac{4}{3} Al + O = \frac{2}{3} Al_2O_3$', 0],
+                    [ 928,1698,  -73.0,  -45.0, r'$\frac{4}{3} Sb + O_2 = \frac{2}{3} Sb_2O_3$', 0],                                        
+                    [1098,1852, -44.0,   -12.0, r'$\frac{4}{3} Bi + O_2 = \frac{2}{3} Bi_2O_3$', 0],
                     [1809,2000, -71.9,   -67.9, '$2Fe + O_2 = 2FeO$', 0],  
                     [1376,3125, -214.0,   52.0, '$2Mg + O_2 = 2MgO $', 0],
+                    [ 763, 915,  -84.0,  -73.0, '$4Cs + O_2 = 2Cs_2O$', -16],                                       
                     [1509,2500,  -28.0,   -9.5, '$4Cu + O_2 = 2Cu_2O $', 0],
                     [1609,1870,   -9.5,      0, '$2Cu + O_2 = 2CuO $', 0],  
                     [ 980,1031, -107.0, -104.0, '$4K + O_2 = 2K_2O $', 0],
+                    [ 910, 952,  -96.0,  -95.0, '$4Rb + O_2 = 2Rb_2O$', -8],                                       
                     [1696,2500, -145.4, -107.8, '$Si + O_2 = SiO_2 $', 0],
                     [2128,2500, -134.5, -121.5, '$Ti + O_2 = TiO_2 $', 0],
+                    [2033,2500, -159.0, -142.5, '$2Ti + O_2 = 2TiO$', 0],
+                    [2190,2500,  -96.0,  -81.0, '$V + O_2 = VO_2$', 0],                    
+                    
                 ])                    
 
 # Metal: gas, oxide: liquid
@@ -139,13 +174,19 @@ oxsg = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset
         ])
 
 # Metal: liquid, oxide: gas
-oxlg = np.array([[0, 0, 0, 0, ' ', 0]]) # no data for compounds in this form
+oxlg = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset in vertical direction
+                [ 915, 955,  -73.0,  -72.0, '$4Cs + O_2 = 2Cs_2O$', -16], 
+                [1698,1908,  -45.0,  -32.0, r'$\frac{4}{3} Sb + O_2 = \frac{2}{3} Sb_2O_3$', 0],                                        
+                
+        ])
 
 # Metal: gas, oxide: gas
 oxgg = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset in vertical direction
                 [   0,3400, -119.3,  -26.6, '$4H + O_2 = 2H_2O$', 0],
                 [1325,2160,  -71.0,    0.0, '$4K + O_2 = 2K_2O $', 0],
                 [1600,2250,  -62.0,    0.0, '$4Na + O_2 = 2Na_2O $', 0],
+                [1908,2380,  -32.0,    0.0, r'$\frac{4}{3} Sb + O_2 = \frac{2}{3} Sb_2O_3$', 0],                                        
+                
                 ])
 
     
@@ -159,10 +200,10 @@ cass = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset
                     [   0, 1414,   -57,    -49, '$ Si + C = SiC $', -9],   
                     [   0, 1750,  -160, -150.5, '$ Ti + C = TiC $', -5],
                     [   0,  723,    23,     -1, '$3Fe + C = Fe_3C $', 0],
-                    [   0, 1290,   -31,    -34, '$2W + C = W_2C$', 0],
-                    [   0,  800, -39.5,    -45, '$W + C = WC$', -9],
+                    [   0, 1290,   -31,    -34, '$2W + C = W_2C$', -1],
+                    [   0,  800, -39.5,    -45, '$W + C = WC$', -10],
                     [   0, 1000,   -70,    -59, '$2Mo + C = Mo_2C$', -12],
-                    [   0,  720,  -183,   -175, '$Zr + C = ZrC$', 0],
+                    [   0,  720,  -183,   -175, '$Zr + C = ZrC$', 1],
                     
                     
                 ])
@@ -202,19 +243,22 @@ cagg = np.array([[0, 0, 0, 0, ' ', 0]]) # no data for compounds in this form
 
 # Metal: solid, nitride: solid
 niss = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset in vertical direction
-                    [   0, 932, -144.3, -101.0, '$2Al + N_2 = 2AlN $', 0],  
-                    [   0,1809,   -5.8,   38.5, '$8Fe + N_2 = 2Fe_4N $', 10],
+                    [   0, 932, -144.3, -101.0, '$2Al + N_2 = 2AlN $', 0],
+                    [   0,2300, -121.4,  -20.8, '$2B + N_2 = 2BN$', 0],
+                    [   0,1809,   -5.8,   38.5, '$8Fe + N_2 = 2Fe_4N $', 12],
                     [   0, 923, -109.6,  -65.8, '$3Mg + N_2 = Mg_3N_2 $', 8],
                     [   0,1150,  -31.9,    0.0, '$4Mo + N_2 = Mo_2N $', 10],
                     [   0,0, -24.1,  -24.1, '$6H + N_2 = 2NH_3$', 0],
-                    [   0,1680,  -90.0,  -22.5, r'$\frac{3}{2}Si + N_2 = \frac{1}{2}Si_3N_4 $', 0],
+                    [   0,1680,  -90.0,  -22.5, r'$\frac{3}{2}Si + N_2 = \frac{1}{2}Si_3N_4 $', -6],
                     [   0,1940, -160.5,  -73.4, '$2Ti + N_2 = 2TiN $', 1],
-                    [   0,2128, -163.8,  -67.2, '$2Zr + N_2 = 2ZrN $', -1],
+                    [   0,2190,  -83.3,    3.6, '$2V + N_2 = 2VN$', -13],
+                    [   0,2128, -163.8,  -67.2, '$2Zr + N_2 = 2ZrN $', -2],
                     
                 ])
 
 # Metal: liquid, nitride: solid
 nils = np.array([     #T0,  T1,     G0,     G1,  chemical equation, label offset in vertical direction
+                    [2300,2500, -20.8,       0, '$2B + N_2 = 2BN$', 0],                    
                     [ 923,1376,  -65.8,  -41.3, '$3Mg + N_2 = Mg_3N_2', 0],
                     [1680,2130,  -22.5,    0.0, r'$\frac{3}{2}Si + N_2 = \frac{1}{2}Si_3N_4 $', 0],
           
@@ -255,8 +299,8 @@ flss = np.array([ #T0,  T1,     G0,     G1,  chemical equation, label offset in 
                 [   0, 932, -215.3, -181.0, r'$\frac{2}{3}Al + F_2 = \frac{2}{3}AlF_3 $', 0],
                 [   0,1123, -288.0, -245.0, '$ Ca + F_2 = CaF_2 $', 5],
                 [   0,   0, -129.8, -129.8, '$2H + F_2 = 2HF $', 0],
-                [   0,   0,  -81.2,  -81.2, r'$\frac{1}{2}C + F_2 = \frac{1}{2}CF_4 $', 0],
-                [   0, 453, -290.0, -271.0, '$2Li + F_2 = 2LiF $', -7],
+                [   0,   0,  -81.2,  -81.2, r'$\frac{1}{2}C + F_2 = \frac{1}{2}CF_4 $', 2],
+                [   0, 453, -290.0, -271.0, '$2Li + F_2 = 2LiF $', -8],
                 [   0, 336, -270.0, -253.0, '$2K + F_2 = 2KF $', +0.3],
                 [   0, 371, -274.0, -255.0, '$2Na + F_2 = 2NaF $', -0.3],             
                  ])
@@ -321,7 +365,7 @@ clss = np.array([ #T0,  T1,     G0,     G1,  chemical equation, label offset in 
                 [   0, 465, -110.9,  -92.9, r'$\frac{2}{3}Al + Cl_2 = \frac{2}{3}AlCl_3 $', -5],
                 [   0,1055, -188.0, -154.0, '$ Ca + Cl_2 = CaCl_2 $', 0],
                 [   0,   0,  -12.3,  -12.3, r'$ \frac{1}{2}C + Cl_2 = \frac{1}{2}CCl_4 $  ', 0],
-                [   0,   0,  -45.0,  -45.0, '$2H + Cl_2 = 2HCl $', -10],
+                [   0,   0,  -45.0,  -45.0, '$2H + Cl_2 = 2HCl $', -11],
                 [   0, 459, -193.6, -177.6, '$2Li + Cl_2 = 2LiCl $', 0],
                 [   0, 336, -209.4, -193.2, '$2K + Cl_2 = 2KCl $', 0],
                 [   0, 371, -196.8, -180.0, '$2Na + Cl_2 = 2NaCl $', -5],
@@ -497,23 +541,27 @@ a1.plot(-1000, 1000, color='r', ls='-',  alpha=0.3, label='Metal solid, oxide ga
 a1.plot(-1000, 1000, color='r', ls='--', alpha=0.3, label='Metal liquid, oxide gas')
 a1.plot(-1000, 1000, color='r', ls=':',  alpha=0.3, label='Metal gas, oxide gas')
 
-# Add in the line segments from the oxide data
+
+linedict = {'marker':'.', 'markersize':2.25}
+
 for row in oxss:
-    a1.plot(row[0:2],row[2:4], color='r', ls='-',  alpha=1)
+    a1.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='r', ls='-',  alpha=1,)
 for row in oxls:
-    a1.plot(row[0:2],row[2:4], color='r', ls='--',  alpha=1,)
+    a1.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='r', ls='--',  alpha=1,)
 for row in oxgs:
-    a1.plot(row[0:2],row[2:4], color='r', ls=':',  alpha=1,)
+    a1.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='r', ls=':',  alpha=1,)
 for row in oxsl:
-    a1.plot(row[0:2],row[2:4], color='r', ls='-',  alpha=0.6)
+    a1.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='r', ls='-',  alpha=0.6,)
 for row in oxll:
-    a1.plot(row[0:2],row[2:4], color='r', ls='--', alpha=0.6,)   
+    a1.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='r', ls='--', alpha=0.6,) 
 for row in oxgl:
-    a1.plot(row[0:2],row[2:4], color='r', ls=':',  alpha=0.6,)
+    a1.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='r', ls=':',  alpha=0.6,)
 for row in oxsg:
-    a1.plot(row[0:2],row[2:4], color='r', ls='-',  alpha=0.3,)
+    a1.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='r', ls='-',  alpha=0.3,)
 for row in oxgg:
-    a1.plot(row[0:2],row[2:4], color='r', ls=':',  alpha=0.3,)
+    a1.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='r', ls=':',  alpha=0.3,)
+for row in oxlg:
+    a1.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='r', ls='--',  alpha=0.3,)
 
 # Add text labels for each reaction    
 for row in oxss:
@@ -541,19 +589,19 @@ a1.axhline(0,color='k')
 
 # Title and axis titles
 a1.set_title('Oxides',fontweight='bold')
-a1.set_xlabel('Temperature (°C)',fontweight='bold')
-a1.set_ylabel('Standard free energies of formation of oxides ($\Delta G^0$) (kJ/$mol_{O_2}$)',fontweight='bold')
+a1.set_xlabel('Temperature (°C)',x=0.64)#fontweight='bold')
+a1.set_ylabel(r'Standard free energy of formation ($\Delta \mathit{G}_f \! \degree$) kJ/$mol_{O_2}$',)#fontweight='bold')
 
 
 # A long hack to draw out a legend
 #  Add a rectangle
-rectpos = [850,1920, -1280, -1050]
+rectpos = [900,1970, -1290, -1060]
 a1.add_patch(patches.Rectangle(
         (rectpos[0], rectpos[2]),
         rectpos[1]-rectpos[0],
         rectpos[3]-rectpos[2],
         facecolor='#ffffff',
-        fill=True,
+        fill=True, edgecolor='k', linewidth=1
         )
         )
 #  Add a series of text labels
@@ -608,16 +656,17 @@ a1.text(rectpos[0]+ 290,
         horizontalalignment='right',
         fontsize=9,        
         )
+
 #  Add short lines to indicate the line style
-a1.plot([1210, 1350], [-1150, -1150], color='r', ls='-',  alpha=1,   label='Metal solid, oxide solid')
-a1.plot([1470, 1610], [-1150, -1150], color='r', ls='--', alpha=1,   label='Metal liquid, oxide solid')
-a1.plot([1730, 1870], [-1150, -1150], color='r', ls=':',  alpha=1,   label='Metal gas, oxide solid')
-a1.plot([1210, 1350], [-1198, -1198], color='r', ls='-',  alpha=0.6, label='Metal solid, oxide liquid')
-a1.plot([1470, 1610], [-1198, -1198], color='r', ls='--', alpha=0.6, label='Metal liquid, oxide liquid')
-a1.plot([1730, 1870], [-1198, -1198], color='r', ls=':',  alpha=0.6, label='Metal gas, oxide liquid')
-a1.plot([1210, 1350], [-1245, -1245], color='r', ls='-',  alpha=0.3, label='Metal solid, oxide gas')
-a1.plot([1470, 1610], [-1245, -1245], color='r', ls='--', alpha=0.3, label='Metal liquid, oxide gas')
-a1.plot([1730, 1870], [-1245, -1245], color='r', ls=':',  alpha=0.3, label='Metal gas, oxide gas')
+a1.plot([1260, 1400], [-1160, -1160], color='r', ls='-',  alpha=1,   label='Metal solid, oxide solid')
+a1.plot([1520, 1660], [-1160, -1160], color='r', ls='--', alpha=1,   label='Metal liquid, oxide solid')
+a1.plot([1780, 1920], [-1160, -1160], color='r', ls=':',  alpha=1,   label='Metal gas, oxide solid')
+a1.plot([1260, 1400], [-1208, -1208], color='r', ls='-',  alpha=0.6, label='Metal solid, oxide liquid')
+a1.plot([1520, 1660], [-1208, -1208], color='r', ls='--', alpha=0.6, label='Metal liquid, oxide liquid')
+a1.plot([1780, 1920], [-1208, -1208], color='r', ls=':',  alpha=0.6, label='Metal gas, oxide liquid')
+a1.plot([1260, 1400], [-1255, -1255], color='r', ls='-',  alpha=0.3, label='Metal solid, oxide gas')
+a1.plot([1520, 1660], [-1255, -1255], color='r', ls='--', alpha=0.3, label='Metal liquid, oxide gas')
+a1.plot([1780, 1920], [-1255, -1255], color='r', ls=':',  alpha=0.3, label='Metal gas, oxide gas')
 
 
 
@@ -625,23 +674,23 @@ a1.plot([1730, 1870], [-1245, -1245], color='r', ls=':',  alpha=0.3, label='Meta
 
 # Add in the line segments from the carbide data
 for row in cass:
-    a2.plot(row[0:2],row[2:4], color='0.4', ls='-',  alpha=1)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='0.4', ls='-',  alpha=1)
 for row in cals:
-    a2.plot(row[0:2],row[2:4], color='0.4', ls='--',  alpha=1,)
-for row in cags:
-    a2.plot(row[0:2],row[2:4], color='0.4', ls=':',  alpha=1,)
-for row in casl:
-    a2.plot(row[0:2],row[2:4], color='0.4', ls='-',  alpha=0.6)
-for row in call:
-    a2.plot(row[0:2],row[2:4], color='0.4', ls='--', alpha=0.6,)  
-for row in cagl:
-    a2.plot(row[0:2],row[2:4], color='0.4', ls=':',  alpha=0.6,)
-for row in casg:
-    a2.plot(row[0:2],row[2:4], color='0.4', ls='-',  alpha=0.3,)    
-for row in casg:
-    a2.plot(row[0:2],row[2:4], color='0.4', ls='--',  alpha=0.3,)
-for row in cagg:
-    a2.plot(row[0:2],row[2:4], color='0.4', ls=':',  alpha=0.3,)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='0.4', ls='--',  alpha=1,)
+#for row in cags:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='0.4', ls=':',  alpha=1,)
+#for row in casl:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='0.4', ls='-',  alpha=0.6)
+#for row in call:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='0.4', ls='--', alpha=0.6,)  
+#for row in cagl:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='0.4', ls=':',  alpha=0.6,)
+#for row in casg:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='0.4', ls='-',  alpha=0.3,)    
+#for row in casg:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='0.4', ls='--',  alpha=0.3,)
+#for row in cagg:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='0.4', ls=':',  alpha=0.3,)
 
 # Add text labels for each reaction 
 for row in cass:
@@ -653,23 +702,23 @@ for row in cass:
 
 # Add in the line segments from the nitride data
 for row in niss:
-    a2.plot(row[0:2],row[2:4], color='b', ls='-',  alpha=1)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='b', ls='-',  alpha=1)
 for row in nils:
-    a2.plot(row[0:2],row[2:4], color='b', ls='--',  alpha=1,)
-for row in nigs:
-    a2.plot(row[0:2],row[2:4], color='b', ls=':',  alpha=1,)
-for row in nisl:
-    a2.plot(row[0:2],row[2:4], color='b', ls='-',  alpha=0.6)
-for row in nill:
-    a2.plot(row[0:2],row[2:4], color='b', ls='--', alpha=0.6,)    
-for row in nigl:
-    a2.plot(row[0:2],row[2:4], color='b', ls=':',  alpha=0.6,)
-for row in nisg:
-    a2.plot(row[0:2],row[2:4], color='b', ls='-',  alpha=0.3,)    
-for row in nisg:
-    a2.plot(row[0:2],row[2:4], color='b', ls='--',  alpha=0.3,)
-for row in nigg:
-    a2.plot(row[0:2],row[2:4], color='b', ls=':',  alpha=0.3,)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='b', ls='--',  alpha=1,)
+#for row in nigs:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='b', ls=':',  alpha=1,)
+#for row in nisl:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='b', ls='-',  alpha=0.6)
+#for row in nill:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='b', ls='--', alpha=0.6,)    
+#for row in nigl:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='b', ls=':',  alpha=0.6,)
+#for row in nisg:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='b', ls='-',  alpha=0.3,)    
+#for row in nisg:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='b', ls='--',  alpha=0.3,)
+#for row in nigg:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='b', ls=':',  alpha=0.3,)
 
 # Add text labels for each reaction 
 for row in niss:
@@ -681,23 +730,23 @@ for row in niss:
     
 # Add in the line segments from the fluoride data
 for row in flss:
-    a2.plot(row[0:2],row[2:4], color=[0, 1, 0], ls='-',  alpha=1)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color=[0, 1, 0], ls='-',  alpha=1)
 for row in flls:
-    a2.plot(row[0:2],row[2:4], color=[0, 1, 0], ls='--',  alpha=1,)
-for row in flgs:
-    a2.plot(row[0:2],row[2:4], color=[0, 1, 0], ls=':',  alpha=1,)
-for row in flsl:
-    a2.plot(row[0:2],row[2:4], color=[0, 1, 0], ls='-',  alpha=0.6)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color=[0, 1, 0], ls='--',  alpha=1,)
+#for row in flgs:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color=[0, 1, 0], ls=':',  alpha=1,)
+#for row in flsl:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color=[0, 1, 0], ls='-',  alpha=0.6)
 for row in flll:
-    a2.plot(row[0:2],row[2:4], color=[0, 1, 0], ls='--', alpha=0.6,)    
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color=[0, 1, 0], ls='--', alpha=0.6,)    
 for row in flgl:
-    a2.plot(row[0:2],row[2:4], color=[0, 1, 0], ls=':',  alpha=0.6,)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color=[0, 1, 0], ls=':',  alpha=0.6,)
+#for row in flsg:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color=[0, 1, 0], ls='-',  alpha=0.3,)    
 for row in flsg:
-    a2.plot(row[0:2],row[2:4], color=[0, 1, 0], ls='-',  alpha=0.3,)    
-for row in flsg:
-    a2.plot(row[0:2],row[2:4], color=[0, 1, 0], ls='--',  alpha=0.3,)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color=[0, 1, 0], ls='--',  alpha=0.3,)
 for row in flgg:
-    a2.plot(row[0:2],row[2:4], color=[0, 1, 0], ls=':',  alpha=0.3,)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color=[0, 1, 0], ls=':',  alpha=0.3,)
 
 # Add text labels for each reaction 
 for row in flss:
@@ -709,23 +758,23 @@ for row in flss:
 
 # Add in the line segments from the chloride data
 for row in clss:
-    a2.plot(row[0:2],row[2:4], color='g', ls='-',  alpha=1)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='g', ls='-',  alpha=1)
 for row in clls:
-    a2.plot(row[0:2],row[2:4], color='g', ls='--',  alpha=1,)
-for row in clgs:
-    a2.plot(row[0:2],row[2:4], color='g', ls=':',  alpha=1,)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='g', ls='--',  alpha=1,)
+#for row in clgs:
+#    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='g', ls=':',  alpha=1,)
 for row in clsl:
-    a2.plot(row[0:2],row[2:4], color='g', ls='-',  alpha=0.6)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='g', ls='-',  alpha=0.6)
 for row in clll:
-    a2.plot(row[0:2],row[2:4], color='g', ls='--', alpha=0.6,)   
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='g', ls='--', alpha=0.6,)   
 for row in clgl:
-    a2.plot(row[0:2],row[2:4], color='g', ls=':',  alpha=0.6,)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='g', ls=':',  alpha=0.6,)
 for row in clsg:
-    a2.plot(row[0:2],row[2:4], color='g', ls='-',  alpha=0.3,)    
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='g', ls='-',  alpha=0.3,)    
 for row in cllg:
-    a2.plot(row[0:2],row[2:4], color='g', ls='--',  alpha=0.3,)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='g', ls='--',  alpha=0.3,)
 for row in clgg:
-    a2.plot(row[0:2],row[2:4], color='g', ls=':',  alpha=0.3,)
+    a2.plot([float(row[0]), float(row[1])],[float(row[2]), float(row[3])], **linedict, color='g', ls=':',  alpha=0.3,)
 
 # Add text labels for each reaction 
 for row in clss:
@@ -753,18 +802,18 @@ a2.axhline(0,color='k')
 
 # Title and axis titles
 a2.set_title('Carbides, nitrides, fluorides and chlorides',fontweight='bold')
-a2.set_xlabel('Temperature (°C)',fontweight='bold')
-a2.set_ylabel('Standard free energies of formation of compounds ($\Delta G^0$) (kJ/$mol_{C/N_2/F_2/Cl_2}$)',fontweight='bold')
+a2.set_xlabel('Temperature (°C)',x=0.64)#fontweight='bold')
+a2.set_ylabel('Standard free energy of formation ($\Delta \mathit{G}_f \! \degree$) kJ/$mol_{C/N_2/F_2/Cl_2}$',)#fontweight='bold')
 
 # Another long hack to draw out a legend
 #  Add a rectangle
-rectpos = [850,1920, -1280, -1050]
+rectpos = [900,1970, -1290, -1060]
 a2.add_patch(patches.Rectangle(
         (rectpos[0], rectpos[2]),
         rectpos[1]-rectpos[0],
         rectpos[3]-rectpos[2],
         facecolor='#ffffff',
-        fill=True,
+        fill=True, edgecolor='k', linewidth=1
         #zorder=-3
         )
         )
@@ -803,6 +852,10 @@ a2.text(rectpos[0] + 30,
         fontstyle='italic',        
         ) 
 
-# Save the figures as a .png and a .pdf.
+# Tight layout
+#pl.tight_layout()
+
+# Save the figures
+pl.savefig('ellingham.eps',dpi=400,bbox_inches='tight')
 pl.savefig('ellingham.png',dpi=400,bbox_inches='tight')
 pl.savefig('ellingham.pdf',dpi=400,bbox_inches='tight')
